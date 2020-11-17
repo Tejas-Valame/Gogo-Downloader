@@ -17,7 +17,7 @@ def cd():	#creates a directory to store our downloaded files
         os.mkdir(name+"-"+dict1[qty])
         print("Created New Directory: ", name+"-"+dict1[qty])
     except FileExistsError:
-        print("Continuing to download in Existing Folder: ", name)
+        print("Continuing to download in Existing Folder: ", name+"-"+dict1[qty])
     except:
         print("Cant create directory")
         end("dir creation error")
@@ -36,7 +36,7 @@ def parser(url1, txt):	#parses the hml and reurns url that contains txt
                 return h
     return None
 def correct(str):	#formats the input from line 77 to correct URL [Valid inputs 'death note', 'https://gogoanime.so/death-note-episode-1', 'death-note', 'https://gogoanime.so/category/death-note']
-    str=str.replace(" ", "-")
+    str=str.strip().replace(" ", "-")
     if re.search("https://gogoanime.+?/category/.+", str)!=None:
         return str
     if re.search("https://gogoanime.+?/.+-episode-", str)!=None:
@@ -50,20 +50,17 @@ def store(url): #saves the files in folder
 
     if total_length is None: # no content length header
         print("no content length header")
-        #eps+=1
     else:
-        file_name = name+"-"+dict1[qty]+"/"+name+"-episode-"+str(ep_num) +"."+response.headers.get('content-type').split('/')[1]
+        file_name = name+"-"+dict1[qty]+"/"+name+"-"+dict1[qty]+"-episode-"+str(ep_num) +"."+response.headers.get('content-type').split('/')[1]
         with open(file_name, "wb") as f:
             dl = 0
             total_length = int(total_length)
-            for data in response.iter_content(chunk_size=4096):
+            for data in response.iter_content(chunk_size=5120):
                 dl += len(data)
                 f.write(data)
                 done = int(50 * dl / total_length)
-                sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )    
+                sys.stdout.write("\r["+'=' * done+' ' * (50-done)+"]  "+str(dl/total_length*100)[:5]+" %" )    #displaysdownload percentage and progress bar
                 sys.stdout.flush()
-        #epf+=1
-                
 
 
 
@@ -73,7 +70,6 @@ def store(url): #saves the files in folder
 
 dict1={ 1:"360p", 2:"480p", 3:"720p", 4:"1080p", }
 epf=0
-eps=0
 baseURL=correct(input("Enter the Base URL from gogo anime: "))
 
 try:
@@ -108,9 +104,12 @@ try:
             epf+=1
             continue
         else:
-            store(dl.replace("amp;", ""))
-    print(eps, "Succeded", epf, "failed")
+            try:
+                store(dl.replace("amp;", ""))
+            except:
+                epf+=1
+    print("\n"+str(end_ep-base_ep-epf+1), "Succeded", epf, "failed")
     input("\nDownload Completed.\n Happy Watching\nHit Enter to Exit")
 except Exception:
-    print(eps, "Succeded", epf, "Failed")
+    print("\n"+str(end_ep-base_ep-epf), "Succeded\t", epf, "Failed")
     input("\nSome Fatal Error has occured\nHit Enter to Exit")
