@@ -98,7 +98,10 @@ try:
             epf+=1
             continue
         print(name,"episode", str(ep_num),":",dpg)
-        dl=parser(dpg, dict1[qty])
+        try:
+            dl=parser(dpg, dict1[qty])
+        except Exception:
+            pass
         
         if(dl==None):
             print(name+"-episode-"+str(ep_num), "is not available in", dict1[qty]+". Try some other resolution. Moving Next")
