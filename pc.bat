@@ -1,1 +1,0 @@
-pyinstaller -F GogoDownloader.py -i logo.ico
