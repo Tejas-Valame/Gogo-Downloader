@@ -5,15 +5,14 @@ Lives in: Pune,India
 Get the exe here: https://mega.nz/file/ZDxkFIrS#DKX04SdhZDzG4h2xDcFdkqoPuK0SP_LZ4O65ZrxCgrg
 *Only works on win 64 bit*
 '''
-import string, re, os, sys
+
+import re, os, sys
 from bs4 import BeautifulSoup as bs
 import requests as rq
-
 
 def end(i):
     input("Exception: " +str(i) +"\nHit Enter to EXIT")
     exit()
-
 
 def cd():	#creates a directory to store our downloaded files
     try:
@@ -22,23 +21,25 @@ def cd():	#creates a directory to store our downloaded files
     except FileExistsError:
         print("Continuing to download in Existing Folder:", name+"-"+dict1[qty])
     except:
-        print("Cant create directory")
         end("dir creation error")
 
-def parser(url1, txt):	#parses the hml and reurns url that contains txt
+def parser(url1, txt1):	#parses the page of given url and reurns link that contains txt
     pg=rq.get(url1)
     
     if(pg.status_code!=200):
-        print("HTTP Error, Code:", str(pg.status_code))
+        print("HTTP Error, Code:", pg.status_code)
         return None
-    else:
-        soup=bs(pg.text, 'html.parser')
-        for anchor in soup.find_all('a', href=True):
-            h=anchor.get('href', None)
-            if re.search(txt,h)!=None:
-                return h
+    soup=bs(pg.text, 'html.parser')
+    for anchor in soup.find_all('a', href=True):
+        h=anchor.get('href', None)
+        if(txt1 in h):
+            return h
     return None
-def correct(str):	#formats the input from line 77 to correct URL [Valid inputs 'death note', 'https://gogoanime.so/death-note-episode-1', 'death-note', 'https://gogoanime.so/category/death-note']
+    
+def correct(str):	
+#formats the input from line 77 to correct URL 
+# [Valid inputs 'death note', 'https://gogoanime.so/death-note-episode-1', 
+# 'death-note', 'https://gogoanime.so/category/death-note']
     str=str.strip().replace(" ", "-")
     if re.search("https://gogoanime.+?/category/.+", str)!=None:
         return str
@@ -47,7 +48,7 @@ def correct(str):	#formats the input from line 77 to correct URL [Valid inputs '
     return "https://gogoanime.so/category/"+str
 
 def store(url): #saves the files in folder
-    print("Download Link:",url)
+    print("Download Link:",url,"\n\n")
     response = rq.get(url, stream=True, timeout=10)
     total_length = response.headers.get('content-length')
 
@@ -66,7 +67,6 @@ def store(url): #saves the files in folder
                 #The following line displays download percentage and progress bar
                 sys.stdout.write("\r["+'=' * done+' ' * (50-done)+"] "+str(dl/1048576)[:6]+" MB/"+str(total_length/1048576)[:6]+ " MB "+str(dl/total_length*100)[:5]+"%" )   
                 sys.stdout.flush()
-
 dict1={ 1:"360p", 2:"480p", 3:"720p", 4:"1080p", }
 epf=0
 baseURL=correct(input("Enter the URL from gogo anime: "))
@@ -92,17 +92,13 @@ try:
         print("\nDownloading ",name," ep ",str(ep_num))
         ep_URL=lst[0]+"//"+lst[2]+'/'+lst[4]+"-episode-"+str(ep_num)
         print("Episode URL:", ep_URL)
-        dpg=parser(ep_URL, "https://gogo-stream.com/download")
+        dpg=parser(ep_URL, "download")
         if(dpg==None):
             print("Could not access download page:", ep_URL, "Try it manually. Moving Next")
             epf+=1
             continue
         print(name,"episode", str(ep_num),":",dpg)
-        try:
-            dl=parser(dpg, dict1[qty])
-        except Exception:
-            pass
-        
+        dl=parser(dpg, dict1[qty])
         if(dl==None):
             print(name+"-episode-"+str(ep_num), "is not available in", dict1[qty]+". Try some other resolution. Moving Next")
             epf+=1
@@ -115,5 +111,5 @@ try:
     print("\n"+str(end_ep-base_ep-epf+1), "Succeded", epf, "failed")
     input("\nDownload Completed.\n Happy Watching\nHit Enter to Exit")
 except Exception as ex:
-    print(ex)
-    input("\nSome Fatal Error has occured. Try downloading in other quality or try manually\nHit Enter to Exit")
+    print("Exception",ex)
+    input("\nHit Enter to Exit")
